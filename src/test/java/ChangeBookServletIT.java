@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
  * @author mytreo   28.01.2016.
  * @version 1.0
  */
+
+//TODO тесты не должны зависить от маин.хмл
 public class ChangeBookServletIT {
     private List<Book> mainBookList = new ArrayList<>();
     private String testXmlIns = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
@@ -124,12 +126,12 @@ public class ChangeBookServletIT {
         return request;
     }
 
-   /* @Test
+    @Test
     public void testDoPostError() throws Exception {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
         HttpServletRequest request = getMockedBadRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet(mainBookList);
+        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
 
         changeBookSrv.doPost(request, response);
         assertEquals("400 BAD_REQUEST", stringWriter.toString().trim());
@@ -140,24 +142,25 @@ public class ChangeBookServletIT {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
         HttpServletRequest request = getMockedInsRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet(mainBookList);
-
+        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
+        changeBookSrv.init();
         changeBookSrv.doPost(request, response);
         assertEquals(testXmlIns, stringWriter.toString().trim());
     }
-    @Test
+
+/*    @Test
     public void testDoPostRead() throws Exception {
         Book book1 = new Book("bk101", "Gambardella, Matthew", "XML Developer's Guide", "Computer", 44.95f,date_ , "An in-depth look at creating applications ");
         mainBookList.add(book1);
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
         HttpServletRequest request = getMockedReadRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet(mainBookList);
-
+        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
+        changeBookSrv.init();
         changeBookSrv.doPost(request, response);
 
         assertEquals(testXmlIns, stringWriter.toString().trim());
-    }
+    }*/
     @Test
     public void testDoPostUpdate() throws Exception {
         Book book1 = new Book("bk101", "Matthew", "XML", "Computer", 44.95f, new Date(), "An in-depth look at creating applications ");
@@ -165,8 +168,8 @@ public class ChangeBookServletIT {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
         HttpServletRequest request = getMockedUpdRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet(mainBookList);
-
+        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
+        changeBookSrv.init();
         changeBookSrv.doPost(request, response);
 
         assertEquals(testXmlUpd, stringWriter.toString().trim());
@@ -178,11 +181,11 @@ public class ChangeBookServletIT {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
         HttpServletRequest request = getMockedDelRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet(mainBookList);
-
+        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
+        changeBookSrv.init();
         changeBookSrv.doPost(request, response);
 
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
                 "<catalog/>", stringWriter.toString().trim());
-    }*/
+    }
 }

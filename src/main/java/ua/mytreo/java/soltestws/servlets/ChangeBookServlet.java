@@ -1,11 +1,14 @@
 package ua.mytreo.java.soltestws.servlets;
 
 import org.xml.sax.SAXException;
+import ua.mytreo.java.soltestws.IO.Loader;
+import ua.mytreo.java.soltestws.IO.Saver;
 import ua.mytreo.java.soltestws.entity.Book;
 import ua.mytreo.java.soltestws.entity.Catalog;
 import ua.mytreo.java.soltestws.parser.Parser;
 import ua.mytreo.java.soltestws.parser.impl.ParserJaxbImpl;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Сервлет,отвечающий за работу со списком книг
@@ -27,18 +32,31 @@ import java.util.List;
 @WebServlet(name="changeBook",urlPatterns={ChangeBookServlet.PAGE_URL})
 public class ChangeBookServlet extends HttpServlet {
     public static final String PAGE_URL = "/changeBook";
+    public static final String MAIN_XML_PATH="D:/main.xml";
+    public static final int BETWEEN_SAVES_PAUSE=10000;
     private List<Book> mainBookList;
+    private AtomicInteger countInsUpdDel;
+    private Thread saverSrv;
 
+    @Override
+    public void init() throws ServletException {
+        this.mainBookList = new CopyOnWriteArrayList<>();//ArrayList<>();
+        this.countInsUpdDel= new AtomicInteger(0);
+        Loader loader=new Loader();
+        mainBookList.addAll(loader.getBooksFromFile(MAIN_XML_PATH));
 
-    public ChangeBookServlet() {
-        this.mainBookList = new ArrayList<>();
-        System.out.println("changeBook created!");
+        saverSrv = new Thread(new Saver(countInsUpdDel,mainBookList,MAIN_XML_PATH,BETWEEN_SAVES_PAUSE));
+        saverSrv.start();
     }
 
-        public void doPost(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
-            System.out.println("/changeBookPOST");
+    @Override
+    public void destroy() {
+        saverSrv.interrupt();
+        super.destroy();
+    }
 
+    public void doPost(HttpServletRequest request,
+                       HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/xml;charset=utf-8");
 
         if (!(request.getContentType().equals("text/xml") ||
@@ -109,6 +127,7 @@ public class ChangeBookServlet extends HttpServlet {
             mainBookList.add(bookReq);
         }
         catMain.setBooks(mainBookList);
+        countInsUpdDel.incrementAndGet();
         return parser.marshall(catMain);
     }
 }
