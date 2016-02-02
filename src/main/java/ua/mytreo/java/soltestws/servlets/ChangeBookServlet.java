@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,19 +24,20 @@ import java.util.List;
  * @version 1.3
  */
 
-@WebServlet(ChangeBookServlet.PAGE_URL)
+@WebServlet(name="changeBook",urlPatterns={ChangeBookServlet.PAGE_URL})
 public class ChangeBookServlet extends HttpServlet {
     public static final String PAGE_URL = "/changeBook";
     private List<Book> mainBookList;
 
 
-    public ChangeBookServlet(List<Book> mainBookList) {
-        this.mainBookList = mainBookList;
+    public ChangeBookServlet() {
+        this.mainBookList = new ArrayList<>();
+        System.out.println("changeBook created!");
     }
 
-    public void doPost(HttpServletRequest request,
+        public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-
+            System.out.println("/changeBookPOST");
 
         response.setContentType("text/xml;charset=utf-8");
 
