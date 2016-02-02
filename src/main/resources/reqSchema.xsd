@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:element name="catalog" type="catalog"/>
+
+    <xs:complexType name="catalog">
+        <xs:sequence>
+            <xs:element name="book" type="book" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="book">
+        <xs:sequence>
+            <xs:element name="author" type="xs:string" minOccurs="0" />
+            <xs:element name="title" type="xs:string" minOccurs="0"/>
+            <xs:element name="genre" type="xs:string" minOccurs="0"/>
+            <xs:element name="price" type="xs:float"/>
+            <xs:element name="publish_date" type="xs:string" minOccurs="0"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+</xs:schema>

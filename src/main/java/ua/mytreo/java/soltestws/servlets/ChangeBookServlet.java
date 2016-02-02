@@ -7,6 +7,7 @@ import ua.mytreo.java.soltestws.parser.Parser;
 import ua.mytreo.java.soltestws.parser.impl.ParserJaxbImpl;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,22 +15,22 @@ import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Сервлет,отвечающий за работу со списком книг
  *
  * @author mytreo   27.01.2016.
- * @version 1.2
+ * @version 1.3
  */
+
+@WebServlet(ChangeBookServlet.PAGE_URL)
 public class ChangeBookServlet extends HttpServlet {
     public static final String PAGE_URL = "/changeBook";
     private List<Book> mainBookList;
-    AtomicInteger countInsUpdDel;
 
-    public ChangeBookServlet(List<Book> mainBookList, AtomicInteger countInsUpdDel) {
+
+    public ChangeBookServlet(List<Book> mainBookList) {
         this.mainBookList = mainBookList;
-        this.countInsUpdDel=countInsUpdDel;
     }
 
     public void doPost(HttpServletRequest request,
@@ -82,7 +83,7 @@ public class ChangeBookServlet extends HttpServlet {
             return parser.marshall(catMain);
         }
 
-        Catalog catReq = (Catalog) parser.unMarshall(reqXml, Class.forName("ua.mytreo.java.ua.mytreo.java.soltestws.entity.Catalog"));
+        Catalog catReq = (Catalog) parser.unMarshall(reqXml, Class.forName("ua.mytreo.java.soltestws.entity.Catalog"));
         Book bookReq = catReq.getBooks().get(0);
 
         //INSERT UPDATE DELETE
@@ -106,7 +107,6 @@ public class ChangeBookServlet extends HttpServlet {
             mainBookList.add(bookReq);
         }
         catMain.setBooks(mainBookList);
-        countInsUpdDel.incrementAndGet();
         return parser.marshall(catMain);
     }
 }
