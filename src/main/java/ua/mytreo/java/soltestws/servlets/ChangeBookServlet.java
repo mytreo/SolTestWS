@@ -8,7 +8,6 @@ import ua.mytreo.java.soltestws.entity.Catalog;
 import ua.mytreo.java.soltestws.parser.Parser;
 import ua.mytreo.java.soltestws.parser.impl.ParserJaxbImpl;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +35,9 @@ public class ChangeBookServlet extends HttpServlet {
     private List<Book> mainBookList;
     private AtomicInteger countInsUpdDel;
     private Thread saverSrv;
+    public List<Book> getMainBookList(){
+        return mainBookList;
+    }
 
     @Override
     public void init() throws ServletException {
