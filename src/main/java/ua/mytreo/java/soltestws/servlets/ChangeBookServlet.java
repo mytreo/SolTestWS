@@ -1,12 +1,12 @@
 package ua.mytreo.java.soltestws.servlets;
 
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 import ua.mytreo.java.soltestws.IO.Loader;
 import ua.mytreo.java.soltestws.IO.Saver;
 import ua.mytreo.java.soltestws.entity.Book;
 import ua.mytreo.java.soltestws.entity.Catalog;
 import ua.mytreo.java.soltestws.parser.Parser;
-import ua.mytreo.java.soltestws.parser.impl.ParserJaxbImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @WebServlet(name="changeBook",urlPatterns={ChangeBookServlet.PAGE_URL})
 public class ChangeBookServlet extends HttpServlet {
+    public ApplicationContext ctx;
     public static final String PAGE_URL = "/changeBook";
     public static final String MAIN_XML_PATH="D:/main.xml";
     public static final int BETWEEN_SAVES_PAUSE=10000;
@@ -43,7 +44,8 @@ public class ChangeBookServlet extends HttpServlet {
     public void init() throws ServletException {
         this.mainBookList = new CopyOnWriteArrayList<>();//ArrayList<>();
         this.countInsUpdDel= new AtomicInteger(0);
-        Loader loader=new Loader();
+        this.ctx = (ApplicationContext) this.getServletContext().getAttribute("appContext");
+        Loader loader= (Loader) ctx.getBean("loader");  //new Loader();
         mainBookList.addAll(loader.getBooksFromFile(MAIN_XML_PATH));
 
         saverSrv = new Thread(new Saver(countInsUpdDel,mainBookList,MAIN_XML_PATH,BETWEEN_SAVES_PAUSE));
@@ -96,7 +98,7 @@ public class ChangeBookServlet extends HttpServlet {
     }
 
     private String responseHelper(String reqXml) throws SAXException, ClassNotFoundException, JAXBException {
-        Parser parser = new ParserJaxbImpl();
+        Parser parser = (Parser) ctx.getBean("parserJAXB");//new ParserJaxbImpl();
         Catalog catMain = new Catalog();
         //READ
         if (reqXml.equals("")) {
