@@ -1,11 +1,10 @@
 package ua.mytreo.java.soltestws.IO;
 
-import org.xml.sax.SAXException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import ua.mytreo.java.soltestws.entity.Book;
 import ua.mytreo.java.soltestws.entity.Catalog;
 import ua.mytreo.java.soltestws.parser.Parser;
-import ua.mytreo.java.soltestws.parser.impl.ParserJaxbImpl;
-
 import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.util.List;
@@ -23,12 +22,15 @@ public class Saver implements Runnable {
     private List<Book> saveList;
     private String filepath;
     int innerCounter;
-    public Saver(AtomicInteger outerCounter, List<Book> saveList, String filepath, int sleepingTime){
+    private ApplicationContext ctx;
+
+    public Saver(ApplicationContext ctx, AtomicInteger outerCounter, List<Book> saveList, String filepath, int sleepingTime){
         this.outerCounter=outerCounter;
         this.innerCounter=0;
         this.saveList=saveList;
         this.filepath=filepath;
         this.SLEEPING_TIME=sleepingTime;
+        this.ctx=ctx;
     }
     @Override
     public void run() {
@@ -56,19 +58,14 @@ public class Saver implements Runnable {
         cat.setBooks(saveList);
         String toWriteString;
         try {
-            Parser parser = new ParserJaxbImpl();
+            Parser parser = (Parser) ctx.getBean("parserJAXB");//new ParserJaxbImpl();
             toWriteString=parser.marshall(cat);
-        } catch (SAXException | JAXBException e) {
+        } catch ( JAXBException | NoSuchBeanDefinitionException e) {
            throw new Exception("Can't parse!");
         }
 
-         //Writing To Console
-       /* Writer out= new BufferedWriter(new OutputStreamWriter(System.out));
-        out.write(toWriteString);
-        out.flush();*/
-
         //Writing File
-        System.out.println("write");
+        System.out.println("Write upd "+innerCounter);
         try(FileWriter writer = new FileWriter(filepath, false))
         {
             writer.write(toWriteString);

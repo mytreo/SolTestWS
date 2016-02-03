@@ -1,8 +1,9 @@
 package ua.mytreo.java.soltestws.servlets;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.xml.sax.SAXException;
 import ua.mytreo.java.soltestws.IO.Loader;
+import ua.mytreo.java.soltestws.IO.impl.LoaderImpl;
 import ua.mytreo.java.soltestws.IO.Saver;
 import ua.mytreo.java.soltestws.entity.Book;
 import ua.mytreo.java.soltestws.entity.Catalog;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Сервлет,отвечающий за работу со списком книг
  *
  * @author mytreo   27.01.2016.
- * @version 1.3
+ * @version 1.4
  */
 
 @WebServlet(name="changeBook",urlPatterns={ChangeBookServlet.PAGE_URL})
@@ -45,10 +46,10 @@ public class ChangeBookServlet extends HttpServlet {
         this.mainBookList = new CopyOnWriteArrayList<>();//ArrayList<>();
         this.countInsUpdDel= new AtomicInteger(0);
         this.ctx = (ApplicationContext) this.getServletContext().getAttribute("appContext");
-        Loader loader= (Loader) ctx.getBean("loader");  //new Loader();
-        mainBookList.addAll(loader.getBooksFromFile(MAIN_XML_PATH));
+        Loader loader= (Loader) ctx.getBean("loader");  //new LoaderImpl();
+        mainBookList.addAll(loader.getBooks(MAIN_XML_PATH));
 
-        saverSrv = new Thread(new Saver(countInsUpdDel,mainBookList,MAIN_XML_PATH,BETWEEN_SAVES_PAUSE));
+        saverSrv = new Thread(new Saver(ctx,countInsUpdDel,mainBookList,MAIN_XML_PATH,BETWEEN_SAVES_PAUSE));
         saverSrv.start();
     }
 
@@ -81,7 +82,7 @@ public class ChangeBookServlet extends HttpServlet {
 
         try {
             value = responseHelper(value);
-        } catch (SAXException | ClassNotFoundException e) {
+        } catch ( ClassNotFoundException | NoSuchBeanDefinitionException e) {
             response.getWriter().println("500 SC_INTERNAL_SERVER_ERROR");
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -97,7 +98,7 @@ public class ChangeBookServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private String responseHelper(String reqXml) throws SAXException, ClassNotFoundException, JAXBException {
+    private String responseHelper(String reqXml) throws  ClassNotFoundException, JAXBException,NoSuchBeanDefinitionException {
         Parser parser = (Parser) ctx.getBean("parserJAXB");//new ParserJaxbImpl();
         Catalog catMain = new Catalog();
         //READ
