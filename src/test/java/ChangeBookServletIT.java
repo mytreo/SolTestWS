@@ -3,9 +3,13 @@ import org.junit.Assert;
 import org.junit.Before;
 
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ua.mytreo.java.soltestws.entity.Book;
+import ua.mytreo.java.soltestws.parser.Parser;
 import ua.mytreo.java.soltestws.servlets.ChangeBookServlet;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -28,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 //TODO тесты не должны зависить от маин.хмл
 public class ChangeBookServletIT {
+    private ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"appConfig.xml"});
     private List<Book> mainBookList = new ArrayList<>();
     private String testXmlIns = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
             "<catalog>\n" +
@@ -84,120 +89,83 @@ public class ChangeBookServletIT {
         return response;
     }
 
-    private HttpServletRequest getMockedReadRequest(String url) throws IOException {
-        HttpSession httpSession = mock(HttpSession.class);
+    private HttpServletRequest getMockedRequest(String url,String xml,boolean good) throws IOException {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("")));
-        when(request.getContentType()).thenReturn("text/xml");
-        return request;
-    }
-    private HttpServletRequest getMockedInsRequest(String url) throws IOException {
-        HttpSession httpSession = mock(HttpSession.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(testXmlIns)));
-        when(request.getContentType()).thenReturn("text/xml");
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(xml)));
+        if(good){
+        when(request.getContentType()).thenReturn("text/xml");}
+        else{
+            when(request.getContentType()).thenReturn("text");
+        }
         return request;
     }
 
-    private HttpServletRequest getMockedUpdRequest(String url) throws IOException {
-        HttpSession httpSession = mock(HttpSession.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(testXmlUpd)));
-        when(request.getContentType()).thenReturn("text/xml");
-        return request;
-    }
-
-    private HttpServletRequest getMockedDelRequest(String url) throws IOException {
-        HttpSession httpSession = mock(HttpSession.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(testXmlDel)));
-        when(request.getContentType()).thenReturn("text/xml");
-        return request;
-    }
-
-
-    private HttpServletRequest getMockedBadRequest(String url) throws IOException {
-        HttpSession httpSession = mock(HttpSession.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("")));
-        when(request.getContentType()).thenReturn("text");
-        return request;
+    private ServletConfig getMockedConfig(){
+        ServletConfig config = mock(ServletConfig.class);
+        return config;
     }
 
     @Test
     public void testDoPostError() throws Exception {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
-        HttpServletRequest request = getMockedBadRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
-
+        HttpServletRequest request = getMockedRequest(ChangeBookServlet.PAGE_URL,"",false);
+        ChangeBookServlet changeBookSrv =new ChangeBookServlet();
         changeBookSrv.doPost(request, response);
         assertEquals("400 BAD_REQUEST", stringWriter.toString().trim());
     }
 
-  /*  @Test
+   @Test
     public void testDoPostCreate() throws Exception {
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
-        HttpServletRequest request = getMockedInsRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
-        changeBookSrv.init();
+        HttpServletRequest request = getMockedRequest(ChangeBookServlet.PAGE_URL,testXmlIns,true);
+        ChangeBookServlet changeBookSrv =new ChangeBookServlet();
         int i = changeBookSrv.getMainBookList().size();
         changeBookSrv.doPost(request, response);
         assertEquals(++i, changeBookSrv.getMainBookList().size());
     }
-*/
-  /*  @Test
+
+    @Test
     public void testDoPostRead() throws Exception {
         Book book1 = new Book("bk101", "Gambardella, Matthew", "XML Developer's Guide", "Computer", 44.95f,date_ , "An in-depth look at creating applications ");
-        mainBookList.add(book1);
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
-        HttpServletRequest request = getMockedReadRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
-        changeBookSrv.init();
+        HttpServletRequest request = getMockedRequest(ChangeBookServlet.PAGE_URL,"",true);
+        ChangeBookServlet changeBookSrv =new ChangeBookServlet();
+        changeBookSrv.getMainBookList().add(book1);
         changeBookSrv.doPost(request, response);
-
         changeBookSrv.getMainBookList().add(book1);
         assertEquals(testXmlIns, stringWriter.toString().trim());
-    }*/
-  /*  @Test
+    }
+    @Test
     public void testDoPostUpdate() throws Exception {
         Book book1 = new Book("bk101", "Matthew", "XML", "Computer", 44.95f, new Date(), "An in-depth look at creating applications ");
-        mainBookList.add(book1);
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
-        HttpServletRequest request = getMockedUpdRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
-        changeBookSrv.init();
+        HttpServletRequest request = getMockedRequest(ChangeBookServlet.PAGE_URL,testXmlUpd,true);
+        ChangeBookServlet changeBookSrv =new ChangeBookServlet();
+        changeBookSrv.getMainBookList().add(book1);
         int i = changeBookSrv.getMainBookList().size();
-        changeBookSrv.doPost(request, response);
         assertTrue(i>0);
+        changeBookSrv.doPost(request, response);
         assertEquals(i, changeBookSrv.getMainBookList().size());
-       // assertTrue((stringWriter.toString().trim()).contains(testXmlUpd));//id authr
-        Assert.assertThat((stringWriter.toString().trim()), org.hamcrest.CoreMatchers.containsString(testXmlUpd));
+        assertTrue((stringWriter.toString().trim()).contains("<description>An</description>"));
     }
 
     @Test
     public void testDoPostDelete() throws Exception {
         Book book1 = new Book("bk101", "Gambardella, Matthew", "XML Developer's Guide", "Computer", 44.95f, new Date(), "An in-depth look at creating applications \nwith XML.");
-        mainBookList.add(book1);
         final StringWriter stringWriter = new StringWriter();
         HttpServletResponse response = getMockedResponse(stringWriter);
-        HttpServletRequest request = getMockedDelRequest(ChangeBookServlet.PAGE_URL);
-        ChangeBookServlet changeBookSrv = new ChangeBookServlet();
-        changeBookSrv.init();
+        HttpServletRequest request = getMockedRequest(ChangeBookServlet.PAGE_URL,testXmlDel,true);
+        ChangeBookServlet changeBookSrv =new ChangeBookServlet();
+        changeBookSrv.getMainBookList().add(book1);
         int i = changeBookSrv.getMainBookList().size();
         assertTrue(i>0);
         changeBookSrv.doPost(request, response);
         assertEquals(--i, changeBookSrv.getMainBookList().size());
-
-        assertTrue(!(stringWriter.toString().trim()).contains(testXmlDel));//id
-
-    }*/
+        assertTrue(!(stringWriter.toString().trim()).contains("bk101"));//id
+    }
 }

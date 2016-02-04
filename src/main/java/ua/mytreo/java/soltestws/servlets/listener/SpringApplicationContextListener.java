@@ -8,7 +8,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
 /**
- * Слушатель, передающий сервдету ApplicationContext Spring'a
+ * Слушатель, передающий сервлету ApplicationContext Spring'a
  *
  * @author mytreo  03.02.2016.
  * @version 1.0

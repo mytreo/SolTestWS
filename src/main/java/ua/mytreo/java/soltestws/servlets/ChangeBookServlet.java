@@ -2,8 +2,8 @@ package ua.mytreo.java.soltestws.servlets;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ua.mytreo.java.soltestws.IO.Loader;
-import ua.mytreo.java.soltestws.IO.impl.LoaderImpl;
 import ua.mytreo.java.soltestws.IO.Saver;
 import ua.mytreo.java.soltestws.entity.Book;
 import ua.mytreo.java.soltestws.entity.Catalog;
@@ -28,28 +28,34 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.4
  */
 
-@WebServlet(name="changeBook",urlPatterns={ChangeBookServlet.PAGE_URL})
+@WebServlet(name = "changeBook", urlPatterns = {ChangeBookServlet.PAGE_URL})
 public class ChangeBookServlet extends HttpServlet {
-    public ApplicationContext ctx;
+    public ApplicationContext ctx=new ClassPathXmlApplicationContext(new String[]{"appConfig.xml"});
     public static final String PAGE_URL = "/changeBook";
-    public static final String MAIN_XML_PATH="D:/main.xml";
-    public static final int BETWEEN_SAVES_PAUSE=10000;
+    public static final String MAIN_XML_PATH = "D:/main.xml";
+    public static final int BETWEEN_SAVES_PAUSE = 10000;
     private List<Book> mainBookList;
     private AtomicInteger countInsUpdDel;
     private Thread saverSrv;
-    public List<Book> getMainBookList(){
+
+    public List<Book> getMainBookList() {
         return mainBookList;
+    }
+
+    public ChangeBookServlet() {
+        this.mainBookList = new CopyOnWriteArrayList<>();//ArrayList<>();
+        this.countInsUpdDel = new AtomicInteger(0);
     }
 
     @Override
     public void init() throws ServletException {
-        this.mainBookList = new CopyOnWriteArrayList<>();//ArrayList<>();
-        this.countInsUpdDel= new AtomicInteger(0);
-        this.ctx = (ApplicationContext) this.getServletContext().getAttribute("appContext");
-        Loader loader= (Loader) ctx.getBean("loader");  //new LoaderImpl();
+
+        //this.ctx = (ApplicationContext) this.getServletContext().getAttribute("appContext");
+
+        Loader loader = (Loader) ctx.getBean("loader");  //new LoaderImpl();
         mainBookList.addAll(loader.getBooks(MAIN_XML_PATH));
 
-        saverSrv = new Thread(new Saver(ctx,countInsUpdDel,mainBookList,MAIN_XML_PATH,BETWEEN_SAVES_PAUSE));
+        saverSrv = new Thread(new Saver(ctx, countInsUpdDel, mainBookList, MAIN_XML_PATH, BETWEEN_SAVES_PAUSE));
         saverSrv.start();
     }
 
@@ -82,7 +88,7 @@ public class ChangeBookServlet extends HttpServlet {
 
         try {
             value = responseHelper(value);
-        } catch ( ClassNotFoundException | NoSuchBeanDefinitionException e) {
+        } catch (ClassNotFoundException | NoSuchBeanDefinitionException e) {
             response.getWriter().println("500 SC_INTERNAL_SERVER_ERROR");
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -98,7 +104,7 @@ public class ChangeBookServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private String responseHelper(String reqXml) throws  ClassNotFoundException, JAXBException,NoSuchBeanDefinitionException {
+    private String responseHelper(String reqXml) throws ClassNotFoundException, JAXBException, NoSuchBeanDefinitionException {
         Parser parser = (Parser) ctx.getBean("parserJAXB");//new ParserJaxbImpl();
         Catalog catMain = new Catalog();
         //READ
